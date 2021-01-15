@@ -1,4 +1,3 @@
-setwd("/Users/limo/Nutstore Files/我的坚果云/virome/interaction/")
 ##case specific interactions sparCC&Spieceasi
 library(igraph)
 library(ggplot2)
@@ -7,18 +6,12 @@ library(reshape2)
 library(plyr)
 library(RColorBrewer)
 library(ggsci)
-# cutDupPairs <- function(df){
-#   tmp <- t(apply(df[,1:2],1,sort))
-#   df <- df[!duplicated(tmp),]
-#   # write.table(df,file,row.names=F,quote=F,sep='\t')
-# }
 managedf <- function(df){
   n <- nrow(df)
   lab <- rep("p",n)
   lab[which(df[,3]<0)] <- "n"
   df <- data.frame(df,lab=lab)
   df$lab <- as.character(df$lab) 
-  #  df <- transform(df,cor=abs(cor))
   return(df)
 }
 name_rows <- function(df){
@@ -176,7 +169,6 @@ inter_spiec <- function(file, file2){
   df0 <- df0[,c(1,2,3)]
   names(df0) <- c('OTU1','OTU2', 'cor')
   df <- managedf(df0)
-#  df <- cutDupPairs(df)
   df <- name_rows(df)
 
   df_spiec <-  read.csv(file2, sep = '\t')
@@ -205,7 +197,7 @@ plot_mx <- function(df){
   }
   return(mx)
 }
-genus2phylum <- read.table('../taxons/genus2phylum.txt', sep = '\t', header = T, stringsAsFactors = F)
+genus2phylum <- read.table('genus2phylum.txt', sep = '\t', header = T, stringsAsFactors = F)
 genus2phylum2 <- subset(genus2phylum,!is.na(genus))
 row.names(genus2phylum2) <- genus2phylum2$genus
 
@@ -236,12 +228,11 @@ phage_all <- c()
 eu_all <- c()
 
 for(dir in disease){
-  diff_file <- paste(disease2[i], 'specific_genus.int', sep = '_')
-#  file_case <- paste(paste(dir,'/interaction/bac_vir/', sep = ''), diff_file, sep = '/')
-  file_case2 <- paste('./SpiecEasi/', paste(disease2[i],'case_spiec_int.txt', sep = '_'), sep = '')
-  file3 <- paste('./dfs/', paste(disease2[i],'df.txt', sep = '_'), sep = '')
-  file4 <- paste(dir,'/interaction/bac_vir/nodeAttr.txt', sep = '')
-  
+  diff_file <- paste(disease2[i], 'specific_genus.int', sep = ‘_’)#output of boot_diff.R
+  file_case2 <- paste('./SpiecEasi/', paste(disease2[i],'case_spiec_int.txt', sep = '_'), sep = '') # output of SpiecEasi
+  file3 <- paste('./dfs/', paste(disease2[i],'df.txt', sep = '_'), sep = '') #output file
+  file4 <- paste(dir,'/interaction/bac_vir/nodeAttr.txt', sep = ‘’)#output file
+
   df <- inter_spiec(diff_file, file_case2)
   #df_con <- inter_spiec(file_con, file_con2)
   
@@ -306,14 +297,12 @@ for(dir in disease){
   d_bac_freq$d <- log2(d_bac_freq$d)
   d_bac_freq$Freq <- log2(d_bac_freq$Freq)
   
-  
-  #d_nophage <- d[nonphage_genus]
+
   d_nophage <- mapply(comp_d,nonphage_genus,"nonphage_df")
   d_nophage_freq <- count_d(d_nophage,'without phage')
   d_nophage_freq$d <- log2(d_nophage_freq$d)
   d_nophage_freq$Freq <- log2(d_nophage_freq$Freq)
   
- # d_noeuk <- d[noneu_genus]
   d_noeuk <- mapply(comp_d,noneu_genus,"noneu_df")
   d_noeuk_freq <- count_d(d_noeuk,'without euk-v')
   d_noeuk_freq$d <- log2(d_noeuk_freq$d)
@@ -437,13 +426,7 @@ for(dir in disease){
   row.names(g2) <- bac_genus
   g_name <- paste(disease2[i], '_nonvir_g', sep = '')
   assign(g_name, g2)
-  
-  # names(phylum) <- g
-  # phylum <- as.data.frame(phylum)
-  # names(phylum) <- 'phylum'
-  # g_name <- paste(disease2[i], '_g2', sep = '')
-  # g_names2 <- c(g_names2,g_name)
-  # assign(g_name, phylum)
+
   i = i + 1
 }
 
@@ -475,14 +458,6 @@ write.table(df_md_bac,'mean_degree_bac.txt', quote = F, sep = '\t')
 write.table(df_mod,'modularity.txt', quote = F, sep = '\t')
 write.table(df_path_len,'avg_path_len.txt', quote = F, sep = '\t')
 
-# write.table(T2D_df, 'T2D_df.txt', sep = '\t', row.names = F, quote = F)
-# write.table(CD_df, 'CD_df.txt', sep = '\t', row.names = F, quote = F)
-# write.table(CRC_df, 'CRC_df.txt', sep = '\t', row.names = F, quote = F)
-# write.table(LC_df, 'LC_df.txt', sep = '\t', row.names = F, quote = F)
-# write.table(ATH_df, 'ATH_df.txt', sep = '\t', row.names = F, quote = F)
-# write.table(IBS_df, 'IBS_df.txt', sep = '\t', row.names = F, quote = F)
-#write.table(Healthy_df, 'Healthy_df.txt', sep = '\t', row.names = F, quote = F)
-
 r1 <- df_edges$`negative bacteria-bacteria`/(df_edges$`positive bacteria-bacteria` + df_edges$`negative bacteria-bacteria`)
 r2 <- df_edges$`negative bacteria-phages`/(df_edges$`positive bacteria-phages`+ df_edges$`negative bacteria-phages`)
 r3 <- df_edges$`negative bacteria-euk viruses`/(df_edges$`positive bacteria-euk viruses` + df_edges$`negative bacteria-euk viruses`)
@@ -512,144 +487,11 @@ df_pl$case <- factor(df_pl$case, levels = c('IBS','T2D','CD','CRC','LC'))
 p + labs(x = "log2(node degree)", y="log2(node number)") + scale_color_tron() + theme(axis.text = element_text(size = 14, color = 'black'), 
           legend.position = c(0.85,0.25), legend.background = element_rect(linetype = 'solid',size = 0.5, colour ="black"), axis.title = element_text(size = 15), strip.text = element_text(size = 11),  legend.text = element_text(size = 13), legend.title = element_blank())
 
-
-tmp1 <- c()
-tmp2 <- c()
-tmp1_bac <- c()
-tmp2_bac <- c()
-
-for(dir in disease){
-  #  dir = disease[i]
-  if (dir == 'controls'){
-    file <- './controls_bac_vir/controls.int'
-    v_file <- './controls_bac_vir/viruses.txt'
-  }else{
-    file <- paste(dir,'/interaction/bac_vir/combined_genus_vir.int', sep = '')
-    v_file <- paste(dir,'/interaction/bac_vir/viruses.txt', sep = '')
-  }
-  df <- read.table(file, header = T, sep = '\t',stringsAsFactors = F)
-  df$OTU1 <- as.character(df$OTU1)
-  df$OTU2 <- as.character(df$OTU2)
-  df <- managedf(df)
-  df <- cutDupPairs(df)
-  
-  
-  g <- union(df$OTU1,df$OTU2)
-  
-  viruses <- read.table(v_file, stringsAsFactors = F)[,1]
-  vir_genus <- g[g %in% viruses]
-  bac_genus <- setdiff(g,vir_genus)
-  df1 <- subset(spe2genus,genus %in% vir_genus)
-  phage_genus <- unique(df1[row.names(df1) %in% phages[,2],])
-  eu_genus <- setdiff(vir_genus,phage_genus)
-  df_phage_bac <- subset(df,(OTU1 %in% phage_genus & OTU2 %in% bac_genus) |(OTU1 %in% bac_genus & OTU2 %in% phage_genus))
-  df_eu_bac <- subset(df,(OTU1 %in% eu_genus & OTU2 %in% bac_genus) |(OTU1 %in% bac_genus & OTU2 %in% eu_genus))
-  
-  g_tmp <- phage_genus[phage_genus %in% union(df_phage_bac$OTU1,df_phage_bac$OTU2)]
-  tmp1 <- c(tmp1, g_tmp)
-  g_tmp <- bac_genus[bac_genus %in% union(df_phage_bac$OTU1,df_phage_bac$OTU2)]
-  tmp1_bac <- c(tmp1_bac, g_tmp)
-  
-  g_tmp <- eu_genus[eu_genus %in% union(df_eu_bac$OTU1,df_eu_bac$OTU2)]
-  tmp2 <- c(tmp2, g_tmp)
-  g_tmp <- bac_genus[bac_genus %in% union(df_eu_bac$OTU1,df_eu_bac$OTU2)]
-  tmp2_bac <- c(tmp2_bac, g_tmp)
-  
-}
-phage_matrix <- initial_matrix(tmp1)
-euk_matrix <- initial_matrix(tmp2)
-bac_matrix1 <- initial_matrix(tmp1_bac, fill_value = 0)
-bac_matrix2 <- initial_matrix(tmp2_bac,fill_value = 0)
-phage_union <- row.names(phage_matrix)
-euk_union <- row.names(euk_matrix)
-bac_union1 <- row.names(bac_matrix1)
-bac_union2 <- row.names(bac_matrix2)
-
-i = 1
-for(dir in disease){
-  if (dir == 'controls'){
-    file <- './controls_bac_vir/controls.int'
-    v_file <- './controls_bac_vir/viruses.txt'
-  }else{
-    file <- paste(dir,'/interaction/bac_vir/combined_genus_vir.int', sep = '')
-    v_file <- paste(dir,'/interaction/bac_vir/viruses.txt', sep = '')
-  }
-  df <- read.table(file, header = T, sep = '\t',stringsAsFactors = F)
-  df$OTU1 <- as.character(df$OTU1)
-  df$OTU2 <- as.character(df$OTU2)
-  df <- managedf(df)
-  df <- cutDupPairs(df)
-  
-  g <- union(df$OTU1,df$OTU2)
-  
-  viruses <- read.table(v_file, stringsAsFactors = F)[,1]
-  vir_genus <- g[g %in% viruses]
-  bac_genus <- setdiff(g,vir_genus)
-  df1 <- subset(spe2genus,genus %in% vir_genus)
-  phage_genus <- unique(df1[row.names(df1) %in% phages[,2],])
-  eu_genus <- setdiff(vir_genus,phage_genus)
-  df_phage_bac <- subset(df,(OTU1 %in% phage_genus & OTU2 %in% bac_genus) |(OTU1 %in% bac_genus & OTU2 %in% phage_genus))
-  df_eu_bac <- subset(df,(OTU1 %in% eu_genus & OTU2 %in% bac_genus) |(OTU1 %in% bac_genus & OTU2 %in% eu_genus))
-  
-  g_tmp <- phage_genus[phage_genus %in% union(df_phage_bac$OTU1,df_phage_bac$OTU2)]
-  n_ratio <- mapply(n_link_ratio,g_tmp,"df_phage_bac")
-  tmp = disease2[i]
-  a <- names(phage_matrix[phage_union %in% g_tmp,tmp])
-  phage_matrix[phage_union %in% g_tmp,tmp] <- n_ratio[a]
-  
-  g_tmp <- eu_genus[eu_genus %in% union(df_eu_bac$OTU1,df_eu_bac$OTU2)]
-  n_ratio <- mapply(n_link_ratio,g_tmp,"df_eu_bac")
-  a <- names(euk_matrix[euk_union %in% g_tmp,tmp])
-  euk_matrix[euk_union %in% g_tmp,tmp] <- n_ratio[a]
-  
-  g_tmp <- bac_genus[bac_genus %in% union(df_phage_bac$OTU1,df_phage_bac$OTU2)]
-  bac_matrix1[bac_union1 %in% g_tmp,tmp] <- 1
-  
-  g_tmp <- bac_genus[bac_genus %in% union(df_eu_bac$OTU1,df_eu_bac$OTU2)]
-  bac_matrix2[bac_union2 %in% g_tmp,tmp] <- 1
-  
-  i = i+1
-}
-brewer.pal(9, "Blues")
-pheatmap(t(phage_matrix), fontsize = 10, fontsize_row=5, fontsize_col = 3, cluster_rows = F, cluster_cols = F, cellwidth = 3, cellheight = 6) #color = colorRampPalette(c('navy','white','firebrick3'))(50), 
-brewer.pal(9, "Reds")
-pheatmap(t(euk_matrix), fontsize = 10, fontsize_row=5, fontsize_col = 3, cluster_rows = F, cluster_cols = F,cellwidth = 3, cellheight = 6)
-
-pheatmap(t(bac_matrix1), fontsize_row=5, fontsize_col = 1, cluster_rows = F, cluster_cols = F, cellwidth = 1, cellheight = 6, color = c('white',"#2171B5"),legend = F) #color = colorRampPalette(c('navy','white','firebrick3'))(50), 
-pheatmap(t(bac_matrix2), fontsize_row=5, fontsize_col = 1, cluster_rows = F, cluster_cols = F, cellwidth = 1, cellheight = 6, color = c('white',"#2171B5"),legend = F) #color = colorRampPalette(c('navy','white','firebrick3'))(50), 
-
-a <- subset(T2D_df,edge_type=='bacteria-phages')
-b <- subset(Healthy_df, OTU1=='Klebsiella'|OTU2=='Klebsiella')
-
-c <- subset(Healthy_df,edge_type=='bacteria-phages')
-d <- subset(Healthy_df, OTU1=='Pseudomonas'|OTU2=='Pseudomonas')
-
-control_genus <- union(Healthy_df$OTU1,Healthy_df$OTU2)
-write(control_genus, 'control_genus.txt')
-
-nonvir_df <- subset(df,!(OTU1 %in% viruses|OTU2 %in% viruses))
-noneu_df <- subset(df,!(OTU1 %in% eu_genus|OTU2 %in% eu_genus))
-mod1 <- modul(df) #0.5846156
-mod2 <- modul(nonvir_df) #0.6023351
-mod3 <- modul(noneu_df) #0.5915643
-
-#plot(graph1, vertex.label = NA, layout = layout_as_star)
-
-df2 <- subset(df,(OTU1 %in% phage_genus & OTU2 %in% bac_genus) |(OTU1 %in% bac_genus & OTU2 %in% phage_genus))
-df2 <- subset(df,(OTU1 %in% bac_genus & OTU2 %in% bac_genus))
-df2 <- subset(df,(OTU1 %in% eu_genus & OTU2 %in% bac_genus) |(OTU1 %in% bac_genus & OTU2 %in% eu_genus))
-df2 <- subset(df,(OTU1 %in% phage_genus & OTU2 %in% phage_genus))
-df2 <- subset(df,(OTU1 %in% eu_genus & OTU2 %in% eu_genus))
-df2 <- subset(df,(OTU1 %in% eu_genus & OTU2 %in% phage_genus) |(OTU1 %in% phage_genus & OTU2 %in% eu_genus))
-
 #######modularity heatmap
 ann_colors <- list('node.class' = c(bacteria="#70A6FF", phage = "#FD7C76", 'euk viruses' = "#1BD24A"), 'phylum.or.viruses' = c('Firmicutes' = '#1258DC', 'Bacteroidetes' = '#F94D58', 'Proteobacteria' = '#FFED29', 'Actinobacteria' = '#A51D26','Viruses' = '#8FAFEA', 'Others' = '#98CA32'))
 #ann_colors <- list('node.class' = c(bacteria="#70A6FF", phage = "#FD7C76", 'euk viruses' = "#1BD24A"), phylum = c('Actinobacteria' = '#DF5000', 'Bacteroidetes' = '#FAF05D', 'Firmicutes' = '#AAD0F2', 'Proteobacteria' = '#49359B', 'Others' = '#98CA32','Viruses' = '#8FAFEA'))
 
-#c('Firmicutes','Bacteroidetes','Proteobacteria','Actinobacteria','Viruses'))] <- 'Others'
 ann_colors2 <- list( 'phylum.or.viruses' = c('Firmicutes' = '#1258DC', 'Bacteroidetes' = '#F94D58', 'Proteobacteria' = '#FFED29', 'Actinobacteria' = '#A51D26', 'Others' = '#98CA32'))
-#ann_colors2 <- list(phylum = c('Actinobacteria' = '#DF5000', 'Bacteroidetes' = '#FAF05D', 'Firmicutes' = '#AAD0F2', 'Proteobacteria' = '#49359B', 'Others' = '#98CA32'))
-#breaksList = seq(0, 50, by = 1)
 heatmp <- function(mx, g){
   pheatmap(mx, color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdBu")))(100), border_color=NA, cluster_cols = F, fontsize = 12,  cluster_rows = F, legend = F, annotation_legend = FALSE, annotation_names_row = F, annotation_names_col = F, fontsize_row = 1, fontsize_col = 1, annotation_row = g, annotation_col = g, annotation_colors = ann_colors, width = 100, height = 100 )#legend_breaks = c(0,0.5), legend_labels = c("this is a     really long item", '0.5')
 }
@@ -661,102 +503,15 @@ mxnames
 g_names
 heatmp(T2D_mx, T2D_g)
 heatmp_nonvir(T2D_nonvir_mx, T2D_nonvir_g)
-#heatmp(T2D_con_mx, T2D_con_g)
+
 heatmp(CD_mx, CD_g)
 heatmp_nonvir(CD_nonvir_mx, CD_nonvir_g)
-#heatmp(CD_con_mx, CD_con_g)
+
 heatmp(CRC_mx, CRC_g)
 heatmp_nonvir(CRC_nonvir_mx, CRC_nonvir_g)
-#heatmp(CRC_con_mx, CRC_con_g)
+
 heatmp(LC_mx, LC_g)
 heatmp_nonvir(LC_nonvir_mx, LC_nonvir_g)
 
-#heatmp(LC_con_mx, LC_con_g)
-# heatmp(ATH_mx, ATH_g)
-# heatmp_nonvir(ATH_novir_mx, ATH_nonvir_g)
-
-#heatmp(ATH_con_mx, ATH_con_g)
 heatmp(IBS_mx, IBS_g)
 heatmp_nonvir(IBS_nonvir_mx, IBS_nonvir_g)
-
-# heatmp(IBS_con_mx, IBS_con_g)
-# heatmp(Healthy_mx, Healthy_g)
-# df1 <- subset(spe2genus,genus %in% vir_genus)
-# phage_genus <- unique(df1[row.names(df1) %in% phages[,2],])
-i = 1
-memnames <- c()
-for(dir in disease){
-  if (dir == 'controls'){
-    file <- './controls_bac_vir/controls.int'
-    v_file <- './controls_bac_vir/viruses.txt'
-  }else{
-    file <- paste(dir,'/interaction/bac_vir/combined_genus_vir.int', sep = '')
-    v_file <- paste(dir,'/interaction/bac_vir/viruses.txt', sep = '')
-  }
-  df0 <- read.table(file, header = T, sep = '\t', stringsAsFactors = F)
-  df <- cutDupPairs(df0)
-  graph1 <- graph_from_data_frame(df,directed = F)
-  wtc <- cluster_walktrap(graph1)
-  mem_wtc <- sort(membership(wtc))
-  mem_name <- paste(disease2[i], '_mem', sep = '')
-  memnames <- c(memnames,mem_name)
-  assign(mem_name,mem_wtc)
-  i = i+1
-}
-# df <- cutDupPairs(df0)
-# n <- length(g)
-# graph1 <- graph_from_data_frame(df,directed = F)
-# wtc <- cluster_walktrap(graph1)
-# wtc2 <- sort(membership(wtc))
-# mem_wtc <- membership(wtc)
-# order1 <- sort(table(mem_wtc), decreasing = T)
-# big_clusters <- as.numeric(names(order1[1:5]))
-# for (num in big_clusters){
-#   bac <- names(mem_wtc[mem_wtc==num])
-#   phylum <- genus2phylum2[bac,'phylum']
-# #  df1 <- subset(genus2phylum,genus %in% bac)
-#   phylum[is.na(phylum)] <-'viruses'
-# }
-
-pos_phage1 <- row.names(phage_matrix[phage_matrix[,1] == 0,])
-pos_phage2 <- row.names(phage_matrix[phage_matrix[,2] == 0,])
-pos_phage3 <- row.names(phage_matrix[phage_matrix[,3] == 0,])
-pos_phage4 <- row.names(phage_matrix[phage_matrix[,4] == 0,])
-pos_phage5 <- row.names(phage_matrix[phage_matrix[,5] == 0,])
-pos_phage6 <- row.names(phage_matrix[phage_matrix[,6] == 0,])
-pos_phage <- row.names(phage_matrix[phage_matrix[,7] == 0,]) #healthy
-
-healthy_mod <- Healthy_mem[pos_phage]
-T2D_mod <- T2D_mem[pos_phage1]
-
-####vir module list
-vir_module(Healthy_mem) #16
-vir_module(T2D_mem) #NULL
-vir_module(CD_mem) #6
-vir_module(CRC_mem) #7
-vir_module(LC_mem) #7
-vir_module(ATH_mem) #NULL
-vir_module(IBS_mem) #NULL
-for (tmp in c('Healthy','CD','CRC','LC')){
-  tmp2 <- paste(tmp,'mem', sep = '_')
-  ofile <- paste(tmp,'vir_mod.txt', sep = '_')
-  ofile <- paste('./vir_module', ofile, sep = '/')
-  mem <- get(tmp2)
-  mod <- vir_module(mem)
-  mod2 <- names(mem[mem==mod])
-  vir_list <- mod2[mod2 %in% virus_all]
-  vir_list <- data.frame(vir_list)
-  write.table(vir_list, ofile, row.names = F, quote = F, sep = '\t')
-}
-
-####vir module list
-
-df <- read.table('./controls_bac_vir/controls.int', header = T, sep = '\t',stringsAsFactors = F)
-df <- cutDupPairs(df)
-graph1 <- graph_from_data_frame(df,directed = F)
-plot(graph1)
-wtc <- cluster_walktrap(graph1)
-wtc2 <- sort(membership(wtc))
-
-plot(wtc,graph1)
-modularity_matrix(graph1,)
