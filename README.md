@@ -36,7 +36,7 @@ viral_gene_annotation.tar.gz: Annotations for the detected viral genes in this s
 
 family_annotation.txt: The VirGenFunD functional annotation of ACLAME viral protein families.
 
-function_category.txt: The mapping file of functional annotation to VirGenFunD. categories.
+function_category.txt: The mapping file of functional annotation to VirGenFunD categories.
 
 cate-function.txt: The functional annotation of each VirGenFunD category.
 
