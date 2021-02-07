@@ -6,7 +6,7 @@ The scripts in this depository include the pipeline of sequence processing and t
 
 2_functional_annotation.sh: This script is used for functional annotation for detected viral genes.
 
-3_gene_abun.py: This script is used for gene abundance calculation based on the sam file generated in the mapping step of script 1_pre-processing-pipeline.sh. This abundance is equal to the contig abundance where the gene locates. This abundance is used for functional abundance matrix calculation (ACLAME, VGFunC). Usage: `python 3_gene_abun.py file_list gene_sequence.fa output_dir`.
+3_gene_abun.py: This script is used for gene abundance calculation based on the sam file generated in the mapping step of script 1_pre-processing-pipeline.sh. This abundance is equal to the contig abundance where the gene locates. This abundance is used for functional abundance matrix calculation (ACLAME, VirGenFunD). Usage: `python 3_gene_abun.py file_list gene_sequence.fa output_dir`.
 
 4_t_gene_abun.py: This script is used to adjust contig abundance by the gene number of each contig. The reason to adjust gene number is that species abundance should not relate to the gene number in its genome or contig. Usage: `python 4_t_gene_abun.py file_list gene_sequence.fa 3_gene_abun_output_dir output_dir`.
 
@@ -32,12 +32,12 @@ The scripts in this depository include the pipeline of sequence processing and t
 # Data description
 disease-specific-networks.xlsx: disease-specific Networks that can be input into Cytoscape or circos for visualization.
 
-viral_gene_annotation.tar.gz: Annotations for the detected viral genes in this study including taxonomy, KEGG, ACLAME, and VGFunC category.
+viral_gene_annotation.tar.gz: Annotations for the detected viral genes in this study including taxonomy, KEGG, ACLAME, and VirGenFunD category.
 
-family_annotation.txt: The VGFunC functional annotation of ACLAME viral protein families.
+family_annotation.txt: The VirGenFunD functional annotation of ACLAME viral protein families.
 
-function_category.txt: The mapping file of functional annotation to VGFunC. categories.
+function_category.txt: The mapping file of functional annotation to VirGenFunD. categories.
 
-cate-function.txt: The functional annotation of each VGFunC category.
+cate-function.txt: The functional annotation of each VirGenFunD category.
 
 metabo-profiles.xlsx: The host motabolome profiles.
